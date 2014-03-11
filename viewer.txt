@@ -1,0 +1,59 @@
+Data Segment
+Fpath DB 'C:\hi.txt',0	
+Fhandle DW 00H		
+Buffer DB 100 DUP ('$')	
+Data Ends		
+			
+Code Segment
+
+	MOV AX,Data
+	MOV DS,AX
+
+	Opener MACRO Path,Handler
+	
+	MOV AX,3D00H	;AH=3D,AL=00H,DX=Path
+	LEA DX,Path	
+	INT 21H
+	MOV Handler,AX
+
+	ENDM
+
+	Closer MACRO Handler
+	
+	MOV AH,3EH
+	MOV BX,Handler
+	INT 21H
+
+	ENDM
+
+	Printer MACRO name
+
+	LEA DX,name
+	MOV AH,09H
+	INT 21H
+
+	ENDM
+
+	Opener FPath Fhandle	
+
+	XOR SI,SI	
+	
+	Loops:
+	MOV AH,3FH
+	MOV CX,01H
+	MOV BX,Fhandle
+	LEA DX,Buffer[SI]	
+	INT 21H
+	INC SI			
+	CMP AX,CX		
+	JZ LOOPS		
+
+Done:	Closer FHandle
+	Printer Buffer	
+
+MOV AX,4C00H
+INT 21H
+
+
+Code Ends
+end start
